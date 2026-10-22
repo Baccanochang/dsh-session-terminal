@@ -4,11 +4,12 @@
  * A pre-creation chooser: picking the agent happens BEFORE a Session exists, so
  * a blank draft can never take the choice down with it when the user navigates
  * away. The official "+" (uiWorkspace.startSession) is wrapped to open the
- * chooser; the sidebar footer carries the same entry as a fallback.
+ * chooser.
  *
  * DSH keeps the native chat. CodeBuddy / Claude Code / a custom command run in
  * a real Host PTY in the Session's working directory, typed into the official
- * terminal tab, with the right sidebar switched to fullscreen.
+ * terminal tab, which opens as a normal right-column tab (fullscreen is left to
+ * the panel's own button).
  */
 window.__ModuleLoader__.load({
   id: 'dsh-session-terminal',
@@ -293,9 +294,8 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * Allocate a PTY in the Session directory, type the command, hand the same
-     * Host terminal identity to the official sidebar terminal tab, and switch
-     * the right panel to fullscreen.
+     * Allocate a PTY in the Session directory, type the command, and hand the
+     * same Host terminal identity to the official sidebar terminal tab.
      */
     async function launch(ctx, sessionId, tool, anchor, shell) {
       const terminals = ctx.get('webTerminals')
@@ -334,10 +334,9 @@ window.__ModuleLoader__.load({
           sidebar.openTab('terminal', options)
         }
 
-        // Present the panel fullscreen, the same way its own chrome button does.
-        try {
-          enterFullscreen(sidebar, sessionId, anchor)
-        } catch (_error) { /* the panel's own control can still switch modes */ }
+        // The terminal opens as a normal right-column tab. Fullscreen is NOT
+        // entered automatically — it covers the whole frame and reads poorly;
+        // the panel's own fullscreen button is still there when wanted.
 
         // The Host process outlives this client attachment: the tab adopted the
         // same identity, so dropping the launcher's stream never kills it.
