@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Session Terminal",
+    "description": "Choose the agent before a new workspace session is created: DSH chat, CodeBuddy, Claude Code, or a custom command. External CLIs run in a real terminal (cmd / bash / PowerShell) that opens fullscreen in the right sidebar."
+  }
+}

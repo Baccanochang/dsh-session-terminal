@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "会话终端",
+    "description": "新建工作区会话之前先选执行者：DSH 原生聊天、CodeBuddy、Claude Code 或自定义命令。外部 CLI 运行在真实终端（cmd / bash / PowerShell）中，并在右侧栏全屏弹出。"
+  }
+}
