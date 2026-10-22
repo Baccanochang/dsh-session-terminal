@@ -251,22 +251,6 @@ window.__ModuleLoader__.load({
       } catch (_error) { /* already gone */ }
     }
 
-    function isFullscreen(sessionId) {
-      if (typeof window !== 'undefined' && window.innerWidth < 768) return true
-      if (typeof document === 'undefined') return false
-      const owner = document.querySelector('[data-sidebar-right-session="' + String(sessionId) + '"]')
-      const panel = owner === null ? null : owner.querySelector('[data-sidebar-right-panel]')
-      return panel !== null && panel.getAttribute('data-sidebar-right-panel') === 'fullscreen'
-    }
-
-    function enterFullscreen(sidebar, sessionId, anchor) {
-      if (isFullscreen(sessionId)) return
-      if (typeof sidebar.commandTarget !== 'function' || typeof sidebar.toggleFullscreen !== 'function') return
-      const target = sidebar.commandTarget(anchor)
-      if (target === undefined || target === null) return
-      sidebar.toggleFullscreen(target)
-    }
-
     async function openView(terminals, sessionId, shellPath) {
       const key = 'dsh-session-terminal:' + newId()
       const view = terminals.view(sessionId, key, key, undefined, shellPath)
@@ -297,7 +281,7 @@ window.__ModuleLoader__.load({
      * Allocate a PTY in the Session directory, type the command, and hand the
      * same Host terminal identity to the official sidebar terminal tab.
      */
-    async function launch(ctx, sessionId, tool, anchor, shell) {
+    async function launch(ctx, sessionId, tool, shell) {
       const terminals = ctx.get('webTerminals')
       const sidebar = ctx.get('sidebarRight')
       if (!terminals || typeof terminals.view !== 'function') throw new Error(t('error.unavailable'))
@@ -561,7 +545,6 @@ window.__ModuleLoader__.load({
     let chooserRequest = null
     const chooserListeners = new Set()
     let chooserHostMounted = false
-    let anchorElement = null
     let originalStartSession = null
     let patchedWrapper = null
 
@@ -768,7 +751,6 @@ window.__ModuleLoader__.load({
       '.cbs-btn-primary:hover{background:var(--dsw-alias-button-primary-hover);border-color:var(--dsw-alias-button-primary-hover);}',
       '.cbs-error{margin-top:10px;font-size:11px;color:var(--dsw-alias-state-error-primary);overflow-wrap:anywhere;}',
       '.cbs-busy{margin-top:10px;font-size:11.5px;color:var(--dsw-alias-label-secondary);}',
-      '.cbs-anchor{position:fixed;left:0;top:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;}',
     ].join('\n')
 
     function StyleTag() {
@@ -778,20 +760,13 @@ window.__ModuleLoader__.load({
     function ChooserHost(props) {
       useLang()
       const request = React.useSyncExternalStore(subscribeChooser, () => chooserRequest, () => null)
-      const anchorRef = React.useRef(null)
 
       React.useEffect(() => {
         chooserHostMounted = true
         return () => { chooserHostMounted = false }
       }, [])
 
-      React.useEffect(() => {
-        anchorElement = anchorRef.current
-        return () => { anchorElement = null }
-      }, [])
-
       return h(React.Fragment, null,
-        h('span', { className: 'cbs-anchor', ref: anchorRef, 'aria-hidden': 'true' }),
         request ? h(ChooserDialog, { ...props, request }) : null)
     }
 
@@ -891,7 +866,7 @@ window.__ModuleLoader__.load({
           await refreshSessionProjections(ctx, sessionId)
           await pinSession(ctx, sessionId)
           await waitMounted(ctx, sessionId)
-          await launch(ctx, sessionId, tool, anchorElement || document.body, shell)
+          await launch(ctx, sessionId, tool, shell)
           closeChooser()
         } catch (failure) {
           const message = failure && failure.message ? failure.message : String(failure)
